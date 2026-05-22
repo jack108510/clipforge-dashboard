@@ -3,372 +3,584 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ClipForge Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>ClipForge</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0a0a0a;--card:#141414;--card-border:#1e1e1e;--purple:#8b5cf6;--purple-dim:#8b5cf633;--cyan:#06b6d4;--cyan-dim:#06b6d433;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--text:#e5e5e5;--text-dim:#888;--sidebar-w:220px;--transition:.2s ease}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+:root{--bg:#0a0a0a;--card:#141414;--card2:#1a1a1a;--purple:#8b5cf6;--cyan:#06b6d4;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--text:#e5e5e5;--text2:#a3a3a3;--text3:#737373;--border:#262626;--radius:8px}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 a{color:var(--cyan);text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:var(--radius);padding:8px 16px;font-size:14px;font-weight:500;transition:opacity .15s}
+button:hover{opacity:.85}
+input,select,textarea{font-family:inherit;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--radius);font-size:14px;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;white-space:nowrap}
+th{color:var(--text3);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.badge-active,.badge-success,.badge-valid{background:rgba(16,185,129,.15);color:var(--green)}
+.badge-dead,.badge-failed{background:rgba(239,68,68,.15);color:var(--red)}
+.badge-running,.badge-queued{background:rgba(139,92,246,.15);color:var(--purple)}
+.badge-paused{background:rgba(245,158,11,.15);color:var(--amber)}
+.badge-expired{background:rgba(239,68,68,.15);color:var(--red)}
 
-/* Sidebar */
-.sidebar{width:var(--sidebar-w);background:var(--card);border-right:1px solid var(--card-border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform var(--transition)}
-.sidebar-logo{padding:20px;font-size:18px;font-weight:700;color:var(--purple);border-bottom:1px solid var(--card-border);letter-spacing:-.5px}
-.sidebar-nav{flex:1;padding:8px 0}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--text-dim);cursor:pointer;transition:all var(--transition);font-size:14px;font-weight:500;border-left:3px solid transparent}
-.nav-item:hover{color:var(--text);background:#ffffff08}
-.nav-item.active{color:var(--purple);background:var(--purple-dim);border-left-color:var(--purple)}
-.nav-icon{width:18px;height:18px;opacity:.7}
+/* Layout */
+.app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50}
+.sidebar-brand{padding:20px;font-size:18px;font-weight:700;color:var(--purple);border-bottom:1px solid var(--border)}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.nav-item.active{color:var(--purple);border-left-color:var(--purple);background:rgba(139,92,246,.05)}
+.nav-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.main{margin-left:220px;flex:1;padding:24px;max-width:1200px}
 
-/* Mobile toggle */
-.sidebar-toggle{display:none;position:fixed;top:12px;left:12px;z-index:150;background:var(--card);border:1px solid var(--card-border);color:var(--text);width:40px;height:40px;border-radius:8px;cursor:pointer;font-size:18px}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
-
-/* Main */
-.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;padding:24px;transition:margin var(--transition)}
-.page{display:none;animation:fadeIn .2s ease}
-.page.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-
-/* Cards */
-.card{background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:20px;transition:box-shadow var(--transition)}
-.card:hover{box-shadow:0 4px 20px rgba(0,0,0,.3)}
-.card-title{font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.card-value{font-size:28px;font-weight:700}
-
-/* Grid */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-
-/* Table */
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:10px 12px;color:var(--text-dim);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.5px;border-bottom:1px solid var(--card-border)}
-td{padding:10px 12px;border-bottom:1px solid var(--card-border)}
-tr:hover td{background:#ffffff05}
-.thumb{width:48px;height:48px;background:#1e1e1e;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:10px}
-
-/* Badges */
-.badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600}
-.badge-green{background:#10b98122;color:var(--green)}
-.badge-red{background:#ef444422;color:var(--red)}
-.badge-amber{background:#f59e0b22;color:var(--amber)}
-.badge-purple{background:var(--purple-dim);color:var(--purple)}
-.badge-cyan{background:var(--cyan-dim);color:var(--cyan)}
+/* Auth */
+.auth-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+.auth-card{background:var(--card);padding:32px;border-radius:12px;width:100%;max-width:380px;border:1px solid var(--border)}
+.auth-card h2{margin-bottom:24px;font-size:20px;color:var(--text)}
+.auth-card .field{margin-bottom:16px}
+.auth-card label{display:block;font-size:12px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.auth-card .btn-full{width:100%;padding:10px}
+.auth-footer{text-align:center;margin-top:16px;font-size:13px;color:var(--text3)}
 
 /* Buttons */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all var(--transition);font-family:inherit}
-.btn-purple{background:var(--purple);color:#fff}.btn-purple:hover{background:#7c4fe0}
-.btn-cyan{background:var(--cyan);color:#fff}.btn-cyan:hover{background:#059bb8}
-.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#dc3535}
-.btn-ghost{background:transparent;border:1px solid var(--card-border);color:var(--text)}.btn-ghost:hover{background:#ffffff08}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-cyan{background:var(--cyan);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--text3)}
 .btn-sm{padding:5px 10px;font-size:12px}
 
-/* Forms */
-input,select{background:var(--bg);border:1px solid var(--card-border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border var(--transition)}
-input:focus,select:focus{border-color:var(--purple)}
-input[type="number"]{width:100px}
-.form-group{margin-bottom:16px}
-.form-group label{display:block;font-size:13px;color:var(--text-dim);margin-bottom:6px;font-weight:500}
-.form-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
-.toggle-wrap{display:flex;align-items:center;gap:8px}
-.toggle{width:40px;height:22px;background:#333;border-radius:11px;cursor:pointer;position:relative;transition:background var(--transition)}
-.toggle.on{background:var(--green)}
-.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform var(--transition)}
-.toggle.on::after{transform:translateX(18px)}
+/* Cards */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);padding:20px;border-radius:var(--radius);border:1px solid var(--border)}
+.stat-card .label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-card .value{font-size:28px;font-weight:700}
 
-/* Search/filters */
-.filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
-.filters input[type="text"]{min-width:240px}
+.section{margin-bottom:32px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-header h3{font-size:16px;font-weight:600}
 
-/* Pagination */
-.pagination{display:flex;gap:4px;justify-content:center;margin-top:16px}
-.pagination .btn-sm{min-width:32px;justify-content:center}
-.pagination .btn-sm.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+.table-wrap{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow-x:auto}
 
-/* Toast */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--purple);color:var(--text);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;transform:translateY(80px);opacity:0;transition:all .3s ease;z-index:200}
-.toast.show{transform:none;opacity:1}
-
-/* Section headers */
-.section-header{font-size:16px;font-weight:600;margin-bottom:16px}
-
-/* Influencer chips */
-.chips{display:flex;gap:4px;flex-wrap:wrap}
-.chip{padding:2px 8px;background:var(--cyan-dim);color:var(--cyan);border-radius:4px;font-size:11px}
+/* Filters */
+.filters{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filters input,.filters select{width:auto;min-width:160px}
+.filters .search{flex:1;min-width:200px}
 
 /* Channel cards */
-.channel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
-.channel-stat{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid var(--card-border)}
-.channel-stat:last-child{border:none}
-.channel-stat span:first-child{color:var(--text-dim)}
+.channel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.ch-card{background:var(--card);padding:20px;border-radius:var(--radius);border:1px solid var(--border)}
+.ch-card h4{margin-bottom:8px;font-size:15px}
+.ch-card .meta{font-size:12px;color:var(--text3);margin-bottom:4px}
+.ch-card .actions{margin-top:12px;display:flex;gap:8px}
 
-/* Slider */
-input[type="range"]{-webkit-appearance:none;width:100%;height:6px;background:#333;border-radius:3px;outline:none;border:none;padding:0}
-input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--purple);border-radius:50%;cursor:pointer}
+/* Forms */
+.form-card{background:var(--card);padding:24px;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:24px}
+.form-card h3{margin-bottom:16px;font-size:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-row.single{grid-template-columns:1fr}
+.form-row label{display:block;font-size:12px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
 
-/* Danger zone */
-.danger-zone{border:1px solid var(--red);border-radius:10px;padding:20px;margin-top:24px}
-.danger-zone h3{color:var(--red);margin-bottom:12px;font-size:15px}
+/* Tags */
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{background:rgba(139,92,246,.15);color:var(--purple);padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500}
 
-/* Schedule inputs */
-.schedule-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.schedule-row span{min-width:100px;color:var(--text-dim);font-size:13px}
+/* Toggle */
+.toggle{position:relative;width:44px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;transition:background .2s;display:inline-block;vertical-align:middle}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle.on::after{transform:translateX(20px)}
 
-/* Influencer list */
-.influencer-row{display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--card-border);flex-wrap:wrap}
-.influencer-row:last-child{border:none}
-.influencer-name{min-width:150px;font-weight:500}
-.influencer-meta{font-size:12px;color:var(--text-dim)}
+/* Notification */
+.note{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);padding:12px;border-radius:var(--radius);font-size:13px;color:var(--purple);margin-top:12px}
 
-/* Responsive */
+/* Danger */
+.danger-zone{border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.05);padding:20px;border-radius:var(--radius);margin-top:24px}
+.danger-zone h3{color:var(--red);margin-bottom:12px;font-size:16px}
+.danger-zone button{margin-right:12px}
+
+/* Error log */
+.error-log{background:var(--card2);padding:10px;border-radius:var(--radius);font-size:12px;font-family:monospace;color:var(--red);margin-top:8px;white-space:pre-wrap;max-height:200px;overflow:auto;display:none}
+.error-log.show{display:block}
+
+/* Pagination */
+.pagination{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:16px;font-size:13px;color:var(--text3)}
+.pagination button{padding:6px 12px;font-size:13px}
+
+/* Mobile */
 @media(max-width:768px){
-  .sidebar{transform:translateX(-100%)}
-  .sidebar.open{transform:none}
-  .sidebar-toggle{display:flex;align-items:center;justify-content:center}
-  .overlay.show{display:block}
-  .main{margin-left:0;padding:16px;padding-top:60px}
-  .two-col{grid-template-columns:1fr}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .filters input[type="text"]{min-width:160px}
-  .channel-grid{grid-template-columns:1fr}
+  .sidebar{width:60px}
+  .sidebar-brand{padding:16px;text-align:center;font-size:0}
+  .sidebar-brand::first-letter{font-size:18px;color:var(--purple)}
+  .nav-item span{display:none}
+  .nav-item{justify-content:center;padding:12px}
+  .main{margin-left:60px;padding:16px}
+  .form-row{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
 }
+
+/* Modal overlay */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:400px;width:90%}
+.modal h3{margin-bottom:16px}
+.modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:14px}
+.loading{text-align:center;padding:40px;color:var(--text3)}
+
+/* Inline edit */
+.inline-edit{display:inline-flex;gap:4px;align-items:center}
+.inline-edit input{font-size:12px;padding:4px 8px;width:300px}
 </style>
 </head>
 <body>
+<div id="app"></div>
+<script>
+const SUPABASE_URL='https://xacehhtgvubcqdoltazg.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhY2VoaHRndnViY3Fkb2x0YXpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NDI4NjcsImV4cCI6MjA4OTUxODg2N30.5sqLtRtRnWEEuytTsfGhh1hmrQkTilL4Bd_rMrqmQ9A';
 
-<button class="sidebar-toggle" onclick="toggleSidebar()">&#9776;</button>
-<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+async function sbQuery(table,method='GET',body=null,query=''){
+  const opts={method,headers:{
+    'apikey':SUPABASE_KEY,
+    'Authorization':'Bearer '+SUPABASE_KEY,
+    'Content-Type':'application/json',
+    'Prefer':(method==='POST'||method==='PATCH')?'return=representation':''
+  }};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`,opts);
+  if(!r.ok)throw new Error(await r.text());
+  if(r.status===204||r.headers.get('content-length')==='0')return null;
+  return r.json();
+}
 
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-logo">ClipForge</div>
-  <div class="sidebar-nav">
-    <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      Dashboard
-    </div>
-    <div class="nav-item" data-page="clips" onclick="navigate('clips')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Clips
-    </div>
-    <div class="nav-item" data-page="influencers" onclick="navigate('influencers')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Influencers
-    </div>
-    <div class="nav-item" data-page="channels" onclick="navigate('channels')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
-      Channels
-    </div>
-    <div class="nav-item" data-page="settings" onclick="navigate('settings')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Settings
-    </div>
-  </div>
-</nav>
+// Auth
+function getUser(){try{return JSON.parse(localStorage.getItem('cf_user'))}catch{return null}}
+function hashPw(pw){let h=0;for(let i=0;i<pw.length;i++){h=((h<<5)-h)+pw.charCodeAt(i);h|=0}return 'h'+Math.abs(h).toString(36)}
+function getUsers(){try{return JSON.parse(localStorage.getItem('cf_users'))||{}}catch{return {}}}
+function saveUsers(u){localStorage.setItem('cf_users',JSON.stringify(u))}
+function doLogin(u,p){const users=getUsers();if(users[u]&&users[u]===hashPw(p)){localStorage.setItem('cf_user',JSON.stringify({name:u}));return true}return false}
+function doSignup(u,p){const users=getUsers();if(users[u])return false;users[u]=hashPw(p);saveUsers(users);localStorage.setItem('cf_user',JSON.stringify({name:u}));return true}
+function logout(){localStorage.removeItem('cf_user');location.hash='#/login'}
 
-<div class="main">
-  <!-- Dashboard -->
-  <div class="page active" id="page-dashboard">
-    <div class="stats-grid" id="stats-grid"></div>
-    <div class="two-col">
-      <div class="card">
-        <div class="section-header">Recent Clips</div>
-        <div class="table-wrap"><table id="recent-clips-table"><thead><tr><th></th><th>Title</th><th>Channel</th><th>Views</th><th>Date</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+// Routing
+function navigate(h){location.hash=h}
+function getRoute(){const h=location.hash||'#/';return h}
+
+// SVG Icons
+const icons={
+  home:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4h4v4a1 1 0 001 1h3a1 1 0 001-1V10"/></svg>',
+  film:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="7" x2="22" y2="7"/><line x1="2" y1="17" x2="22" y2="17"/></svg>',
+  tv:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+  users:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+  play:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+  gear:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
+  link:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+  logout:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+  plus:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  trash:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>',
+  edit:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  chevron:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>',
+};
+
+const app=document.getElementById('app');
+
+function render(){
+  const route=getRoute();
+  const user=getUser();
+  if(!user&&(route!=='#/login'&&route!=='#/signup')){location.hash='#/login';return}
+  if(user&&(route==='/login'||route==='#/login'||route==='/signup'||route==='#/signup')){location.hash='#/';return}
+  
+  if(route==='#/login')return renderLogin();
+  if(route==='#/signup')return renderSignup();
+  
+  // Sidebar + page
+  let page='';
+  if(route==='#/'||route==='')page=renderDashboard();
+  else if(route==='#/clips')page=renderClips();
+  else if(route==='#/channels')page=renderChannels();
+  else if(route==='#/influencers')page=renderInfluencers();
+  else if(route==='#/pipeline')page=renderPipeline();
+  else if(route==='#/settings')page=renderSettings();
+  else page='<div class="empty">Page not found</div>';
+  
+  app.innerHTML=`<div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-brand">ClipForge</div>
+      <nav class="sidebar-nav">
+        <div class="nav-item${route==='#/'?' active':''}" onclick="navigate('#/')"><span class="nav-icon">${icons.home}</span><span>Dashboard</span></div>
+        <div class="nav-item${route==='#/clips'?' active':''}" onclick="navigate('#/clips')"><span class="nav-icon">${icons.film}</span><span>Clips</span></div>
+        <div class="nav-item${route==='#/channels'?' active':''}" onclick="navigate('#/channels')"><span class="nav-icon">${icons.tv}</span><span>Channels</span></div>
+        <div class="nav-item${route==='#/influencers'?' active':''}" onclick="navigate('#/influencers')"><span class="nav-icon">${icons.users}</span><span>Influencers</span></div>
+        <div class="nav-item${route==='#/pipeline'?' active':''}" onclick="navigate('#/pipeline')"><span class="nav-icon">${icons.play}</span><span>Pipeline</span></div>
+        <div class="nav-item${route==='#/settings'?' active':''}" onclick="navigate('#/settings')"><span class="nav-icon">${icons.gear}</span><span>Settings</span></div>
+      </nav>
+      <div style="padding:12px 16px;border-top:1px solid var(--border)">
+        <div class="nav-item" onclick="logout()" style="padding:8px 4px;border:none"><span class="nav-icon">${icons.logout}</span><span>Logout</span></div>
       </div>
-      <div>
-        <div class="card" style="margin-bottom:16px">
-          <div class="section-header">Pipeline Status</div>
-          <div id="pipeline-status"></div>
-          <div style="margin-top:12px"><button class="btn btn-purple btn-sm" onclick="toast('Pipeline triggered')">Run Now</button></div>
-        </div>
-        <div class="card">
-          <div class="section-header">Quick Actions</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-purple" onclick="toast('Pipeline triggered')">Run Pipeline Now</button>
-            <button class="btn btn-cyan" onclick="navigate('influencers')">Add Influencer</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    </aside>
+    <main class="main">${page}</main>
+  </div>`;
+  
+  // Load data after render
+  if(route==='#/'||route==='')loadDashboard();
+  else if(route==='#/clips')loadClips();
+  else if(route==='#/channels')loadChannels();
+  else if(route==='#/influencers')loadInfluencers();
+  else if(route==='#/pipeline')loadPipeline();
+  else if(route==='#/settings')loadSettings();
+}
 
-  <!-- Clips -->
-  <div class="page" id="page-clips">
-    <div class="section-header">All Clips</div>
+// --- LOGIN ---
+function renderLogin(){
+  app.innerHTML=`<div class="auth-wrap"><div class="auth-card">
+    <h2>Sign in to ClipForge</h2>
+    <div class="field"><label>Username</label><input id="login-user" type="text"></div>
+    <div class="field"><label>Password</label><input id="login-pass" type="password"></div>
+    <div id="login-err" style="color:var(--red);font-size:13px;margin-bottom:8px"></div>
+    <button class="btn-purple btn-full" onclick="handleLogin()">Sign In</button>
+    <div class="auth-footer">Don't have an account? <a href="#/signup">Sign up</a></div>
+  </div></div>`;
+}
+function handleLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  if(!u||!p){document.getElementById('login-err').textContent='Fill in all fields';return}
+  if(!doLogin(u,p)){document.getElementById('login-err').textContent='Invalid credentials';return}
+  location.hash='#/';
+}
+
+// --- SIGNUP ---
+function renderSignup(){
+  app.innerHTML=`<div class="auth-wrap"><div class="auth-card">
+    <h2>Create Account</h2>
+    <div class="field"><label>Username</label><input id="signup-user" type="text"></div>
+    <div class="field"><label>Password</label><input id="signup-pass" type="password"></div>
+    <div id="signup-err" style="color:var(--red);font-size:13px;margin-bottom:8px"></div>
+    <button class="btn-purple btn-full" onclick="handleSignup()">Create Account</button>
+    <div class="auth-footer">Already have an account? <a href="#/login">Sign in</a></div>
+  </div></div>`;
+}
+function handleSignup(){
+  const u=document.getElementById('signup-user').value.trim();
+  const p=document.getElementById('signup-pass').value;
+  if(!u||!p){document.getElementById('signup-err').textContent='Fill in all fields';return}
+  if(!doSignup(u,p)){document.getElementById('signup-err').textContent='Username taken';return}
+  location.hash='#/';
+}
+
+// --- DASHBOARD ---
+function renderDashboard(){
+  return `<div class="section-header"><h3>Dashboard</h3></div>
+    <div class="stats" id="stats-row">
+      <div class="stat-card"><div class="label">Total Clips</div><div class="value" id="s-clips">--</div></div>
+      <div class="stat-card"><div class="label">Clips Today</div><div class="value" id="s-today">--</div></div>
+      <div class="stat-card"><div class="label">Active Channels</div><div class="value" id="s-channels">--</div></div>
+      <div class="stat-card"><div class="label">Total Views</div><div class="value" id="s-views">--</div></div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:24px">
+      <button class="btn-purple" onclick="triggerPipeline()">Run Pipeline</button>
+      <button class="btn-cyan" onclick="navigate('#/channels')">Add Channel</button>
+    </div>
+    <div class="section">
+      <div class="section-header"><h3>Recent Pipeline Runs</h3></div>
+      <div class="table-wrap"><table><thead><tr><th>Time</th><th>Channel</th><th>Influencer</th><th>Status</th><th>Clips</th><th>Duration</th></tr></thead>
+      <tbody id="dash-runs"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody></table></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><h3>Recent Clips</h3></div>
+      <div class="table-wrap"><table><thead><tr><th>Title</th><th>Channel</th><th>Influencer</th><th>Views</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody id="dash-clips"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody></table></div>
+    </div>`;
+}
+async function loadDashboard(){
+  try{
+    const[clips,clipsToday,channels,views,runs,recentClips]=await Promise.all([
+      sbQuery('cf_clips','GET',null,'?select=id'),
+      sbQuery('cf_clips','GET',null,`?select=id&created_at=gte.${new Date().toISOString().slice(0,10)}`),
+      sbQuery('cf_channels','GET',null,"?select=id&status=eq.active"),
+      sbQuery('cf_clips','GET',null,'?select=views'),
+      sbQuery('cf_pipeline_runs','GET',null,'?order=started_at.desc&limit=10'),
+      sbQuery('cf_clips','GET',null,'?order=created_at.desc&limit=10')
+    ]);
+    document.getElementById('s-clips').textContent=clips.length;
+    document.getElementById('s-today').textContent=clipsToday.length;
+    document.getElementById('s-channels').textContent=channels.length;
+    document.getElementById('s-views').textContent=views.reduce((a,c)=>a+(c.views||0),0).toLocaleString();
+    
+    document.getElementById('dash-runs').innerHTML=runs.length?runs.map(r=>`<tr>
+      <td>${fmtTime(r.started_at)}</td><td>${esc(r.channel||'')}</td><td>${esc(r.influencer||'')}</td>
+      <td><span class="badge badge-${r.status}">${r.status}</span></td>
+      <td>${r.clips_uploaded||0}</td><td>${r.duration_seconds?r.duration_seconds+'s':'--'}</td>
+    </tr>`).join(''):'<tr><td colspan="6" class="empty">No pipeline runs yet</td></tr>';
+    
+    document.getElementById('dash-clips').innerHTML=recentClips.length?recentClips.map(c=>`<tr>
+      <td>${esc(c.title||'Untitled')}${c.posted_video_id?` <a href="https://youtube.com/watch?v=${c.posted_video_id}" target="_blank">${icons.link}</a>`:''}</td>
+      <td>${esc(c.posted_to_channel||'')}</td><td>${esc(c.influencer||'')}</td>
+      <td>${(c.views||0).toLocaleString()}</td>
+      <td><span class="badge badge-${c.status}">${c.status}</span></td>
+      <td>${fmtTime(c.created_at)}</td>
+    </tr>`).join(''):'<tr><td colspan="6" class="empty">No clips yet</td></tr>';
+  }catch(e){console.error(e)}
+}
+async function triggerPipeline(){
+  try{await sbQuery('cf_pipeline_runs','POST',{status:'queued',started_at:new Date().toISOString()});render()}catch(e){alert('Error: '+e.message)}
+}
+
+// --- CLIPS ---
+let clipsState={page:0,sort:'created_at.desc',search:'',channel:'',status:'',influencer:''};
+function renderClips(){
+  return `<div class="section-header"><h3>Clips</h3></div>
     <div class="filters">
-      <input type="text" id="clip-search" placeholder="Search clips..." oninput="renderClips()">
-      <select id="clip-channel-filter" onchange="renderClips()"><option value="">All Channels</option></select>
-      <select id="clip-status-filter" onchange="renderClips()"><option value="">All Status</option><option value="uploaded">Uploaded</option><option value="failed">Failed</option><option value="processing">Processing</option></select>
+      <input class="search" placeholder="Search title or influencer..." id="clip-search" oninput="clipsState.search=this.value;clipsState.page=0;loadClips()">
+      <select id="clip-fchan" onchange="clipsState.channel=this.value;clipsState.page=0;loadClips()"><option value="">All Channels</option></select>
+      <select id="clip-fstat" onchange="clipsState.status=this.value;clipsState.page=0;loadClips()">
+        <option value="">All Status</option><option>uploaded</option><option>processing</option><option>failed</option><option>draft</option>
+      </select>
+      <select id="clip-finf" onchange="clipsState.influencer=this.value;clipsState.page=0;loadClips()"><option value="">All Influencers</option></select>
+      <select onchange="clipsState.sort=this.value;clipsState.page=0;loadClips()">
+        <option value="created_at.desc">Newest</option><option value="views.desc">Most Views</option><option value="posted_to_channel">Channel</option>
+      </select>
     </div>
-    <div class="card"><div class="table-wrap"><table id="clips-table"><thead><tr><th>#</th><th></th><th>Title</th><th>Influencer</th><th>Channel</th><th>Views</th><th>Duration</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div></div>
-    <div class="pagination" id="clips-pagination"></div>
-  </div>
+    <div class="table-wrap"><table><thead><tr><th>Title</th><th>Channel</th><th>Influencer</th><th>Views</th><th>Duration</th><th>Status</th><th>Created</th><th></th></tr></thead>
+    <tbody id="clips-body"><tr><td colspan="8" class="loading">Loading...</td></tr></tbody></table></div>
+    <div class="pagination" id="clips-pages"></div>`;
+}
+async function loadClips(){
+  try{
+    const[chans,infs]=await Promise.all([sbQuery('cf_channels','GET',null,'?select=name'),sbQuery('cf_influencers','GET',null,'?select=name')]);
+    const chanSel=document.getElementById('clip-fchan');
+    const infSel=document.getElementById('clip-finf');
+    if(chanSel&&chanSel.options.length<=1){chans.forEach(c=>{const o=document.createElement('option');o.value=c.name;o.textContent=c.name;chanSel.appendChild(o)})}
+    if(infSel&&infSel.options.length<=1){infs.forEach(i=>{const o=document.createElement('option');o.value=i.name;o.textContent=i.name;infSel.appendChild(o)})}
+    
+    let q=`?order=${clipsState.sort}&limit=20&offset=${clipsState.page*20}`;
+    if(clipsState.channel)q+=`&posted_to_channel=eq.${encodeURIComponent(clipsState.channel)}`;
+    if(clipsState.status)q+=`&status=eq.${encodeURIComponent(clipsState.status)}`;
+    if(clipsState.influencer)q+=`&influencer=eq.${encodeURIComponent(clipsState.influencer)}`;
+    if(clipsState.search)q+=`&or=(title.ilike.*${encodeURIComponent(clipsState.search)}*,influencer.ilike.*${encodeURIComponent(clipsState.search)}*)`;
+    
+    const clips=await sbQuery('cf_clips','GET',null,q);
+    const body=document.getElementById('clips-body');
+    body.innerHTML=clips.length?clips.map(c=>`<tr>
+      <td>${esc(c.title||'Untitled')}</td><td>${esc(c.posted_to_channel||'')}</td><td>${esc(c.influencer||'')}</td>
+      <td>${(c.views||0).toLocaleString()}</td><td>${c.duration||'--'}</td>
+      <td><span class="badge badge-${c.status}">${c.status}</span></td><td>${fmtTime(c.created_at)}</td>
+      <td>${c.posted_video_id?`<a href="https://youtube.com/watch?v=${c.posted_video_id}" target="_blank" class="btn-ghost btn-sm">View</a>`:''}</td>
+    </tr>`).join(''):'<tr><td colspan="8" class="empty">No clips found</td></tr>';
+    
+    document.getElementById('clips-pages').innerHTML=clips.length===20?`<button class="btn-ghost btn-sm" onclick="clipsState.page++;loadClips()">Previous</button> Page ${clipsState.page+1} <button class="btn-ghost btn-sm" onclick="clipsState.page++;loadClips()">Next</button>`:`Page ${clipsState.page+1}`;
+  }catch(e){console.error(e)}
+}
 
-  <!-- Influencers -->
-  <div class="page" id="page-influencers">
-    <div class="section-header">Influencers</div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="form-row">
-        <div class="form-group" style="flex:1;min-width:160px"><label>Name</label><input type="text" id="inf-name" placeholder="Influencer name"></div>
-        <div class="form-group" style="flex:2;min-width:200px"><label>Search Terms (comma separated)</label><input type="text" id="inf-terms" placeholder="term1, term2, term3"></div>
-        <button class="btn btn-cyan" onclick="addInfluencer()">Add</button>
-      </div>
+// --- CHANNELS ---
+function renderChannels(){
+  return `<div class="section-header"><h3>Channels</h3></div>
+    <div class="form-card" id="ch-form">
+      <h3>Add Channel</h3>
+      <div class="form-row"><div><label>Channel Name</label><input id="ch-name"></div><div><label>YouTube Channel ID</label><input id="ch-ytid"></div></div>
+      <div class="form-row"><div><label>OAuth Client ID</label><input id="ch-cid"></div><div><label>OAuth Client Secret</label><input id="ch-csec" type="password"></div></div>
+      <button class="btn-purple" onclick="saveChannel()">Save Channel</button>
+      <div id="ch-msg"></div>
     </div>
-    <div class="card"><div id="influencer-list"></div></div>
-  </div>
+    <div class="channel-grid" id="ch-grid"><div class="loading">Loading...</div></div>`;
+}
+async function loadChannels(){
+  try{
+    const channels=await sbQuery('cf_channels','GET',null,'?order=name');
+    document.getElementById('ch-grid').innerHTML=channels.length?channels.map(c=>`<div class="ch-card">
+      <h4>${esc(c.name)}</h4>
+      <div class="meta">YouTube: ${esc(c.youtube_id||'')}</div>
+      <div class="meta">Subscribers: ${(c.subscribers||0).toLocaleString()} | Views: ${(c.total_views||0).toLocaleString()} | Clips: ${c.total_clips||0}</div>
+      <div style="margin-top:8px"><span class="badge badge-${c.status==='active'?'active':'dead'}">${c.status}</span> <span class="badge badge-${c.token_status==='valid'?'valid':'expired'}">Token: ${c.token_status||'unknown'}</span></div>
+      <div class="meta" style="margin-top:4px">Last upload: ${c.last_upload_at?fmtTime(c.last_upload_at):'Never'}</div>
+      <div class="actions"><button class="btn-ghost btn-sm" onclick="editChannel(${c.id})">${icons.edit} Edit</button><button class="btn-red btn-sm" onclick="deleteChannel(${c.id},'${esc(c.name)}')">${icons.trash} Delete</button></div>
+    </div>`).join(''):'<div class="empty">No channels yet. Add one above.</div>';
+  }catch(e){console.error(e)}
+}
+async function saveChannel(){
+  const name=document.getElementById('ch-name').value.trim();
+  const ytid=document.getElementById('ch-ytid').value.trim();
+  const cid=document.getElementById('ch-cid').value.trim();
+  const csec=document.getElementById('ch-csec').value.trim();
+  if(!name||!ytid){alert('Name and YouTube ID required');return}
+  try{
+    await sbQuery('cf_channels','POST',{name,youtube_id:ytid,status:'active',token_status:'pending',subscribers:0,total_views:0,total_clips:0});
+    if(cid||csec){try{await sbQuery('cf_settings','DELETE',null,`?key=eq.oauth_${encodeURIComponent(name)}`)}catch{}await sbQuery('cf_settings','POST',{key:`oauth_${name}`,value:{client_id:cid,client_secret:csec}})}
+    document.getElementById('ch-msg').innerHTML=`<div class="note">Channel saved. Run <code>python3 authorize_channel.py --channel ${name}</code> on the server to complete OAuth.</div>`;
+    loadChannels();
+  }catch(e){alert('Error: '+e.message)}
+}
+async function deleteChannel(id,name){
+  if(!confirm(`Delete channel "${name}"?`))return;
+  try{await sbQuery('cf_channels','DELETE',null,`?id=eq.${id}`);loadChannels()}catch(e){alert(e.message)}
+}
+function editChannel(id){navigate('#/channels')} // simplified
 
-  <!-- Channels -->
-  <div class="page" id="page-channels">
-    <div class="section-header">Channels</div>
-    <div class="channel-grid" id="channel-grid"></div>
-  </div>
+// --- INFLUENCERS ---
+function renderInfluencers(){
+  return `<div class="section-header"><h3>Influencers</h3></div>
+    <div class="form-card">
+      <h3>Add Influencer</h3>
+      <div class="form-row"><div><label>Name</label><input id="inf-name"></div><div><label>Search Terms (comma separated)</label><input id="inf-terms"></div></div>
+      <div style="display:flex;gap:8px"><button class="btn-purple" onclick="addInfluencer()">Add</button><button class="btn-ghost" onclick="seedInfluencers()">Load Default Influencers</button></div>
+    </div>
+    <div class="table-wrap" style="margin-top:16px"><table><thead><tr><th>Name</th><th>Search Terms</th><th>Clips</th><th>Last Clipped</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="inf-body"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody></table></div>`;
+}
+async function loadInfluencers(){
+  try{
+    const infs=await sbQuery('cf_influencers','GET',null,'?order=name');
+    document.getElementById('inf-body').innerHTML=infs.length?infs.map(i=>`<tr>
+      <td>${esc(i.name)}</td>
+      <td><div class="tags">${(i.search_terms||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div></td>
+      <td>${i.clips_count||0}</td><td>${i.last_clipped_at?fmtTime(i.last_clipped_at):'--'}</td>
+      <td><span class="badge badge-${i.status==='active'?'active':'paused'}">${i.status}</span></td>
+      <td>
+        <button class="btn-ghost btn-sm" onclick="toggleInf(${i.id},'${i.status}')">${i.status==='active'?'Pause':'Activate'}</button>
+        <button class="btn-red btn-sm" onclick="deleteInf(${i.id},'${esc(i.name)}')">${icons.trash}</button>
+      </td>
+    </tr>`).join(''):'<tr><td colspan="6" class="empty">No influencers. Add one or load defaults.</td></tr>';
+  }catch(e){console.error(e)}
+}
+async function addInfluencer(){
+  const name=document.getElementById('inf-name').value.trim();
+  const terms=document.getElementById('inf-terms').value.split(',').map(t=>t.trim()).filter(Boolean);
+  if(!name){alert('Name required');return}
+  try{await sbQuery('cf_influencers','POST',{name,search_terms:terms,status:'active',clips_count:0});loadInfluencers()}catch(e){alert(e.message)}
+}
+async function toggleInf(id,status){
+  try{await sbQuery('cf_influencers','PATCH',{status:status==='active'?'paused':'active'},`?id=eq.${id}`);loadInfluencers()}catch(e){alert(e.message)}
+}
+async function deleteInf(id,name){
+  if(!confirm(`Delete "${name}"?`))return;
+  try{await sbQuery('cf_influencers','DELETE',null,`?id=eq.${id}`);loadInfluencers()}catch(e){alert(e.message)}
+}
+async function seedInfluencers(){
+  const defaults=['IShowSpeed','Kai Cenat','xQc','CaseOh','Jynxzi','MrBeast','Dude Perfect','Mark Rober','SSniperWolf','Markiplier','Sidemen','HasanAbi','Adin Ross','Beta Squad','Stokes Twins','PewDiePie','Khaby Lame','Fanum','YourRAGE','BruceDropEmOff','Charli D\'Amelio','Bretman Rock','No Jumper','The Yard podcast','Brainrot'];
+  try{
+    const existing=await sbQuery('cf_influencers','GET',null,'?select=name');
+    const names=new Set(existing.map(e=>e.name));
+    const toAdd=defaults.filter(d=>!names.has(d)).map(d=>({name:d,search_terms:[d],status:'active',clips_count:0}));
+    if(toAdd.length){await sbQuery('cf_influencers','POST',toAdd);alert(`Added ${toAdd.length} influencers`)}
+    else alert('All defaults already exist');
+    loadInfluencers();
+  }catch(e){alert(e.message)}
+}
 
-  <!-- Settings -->
-  <div class="page" id="page-settings">
-    <div class="section-header">Configuration</div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="form-row">
-        <div class="form-group"><label>Clips per Run</label><input type="number" id="cfg-clips-per-run" value="1" min="1" onchange="saveSettings()"></div>
-        <div class="form-group"><label>Runs per Day</label><input type="number" id="cfg-runs-per-day" value="3" min="1" onchange="saveSettings()"></div>
-        <div class="form-group"><label>Clip Duration (s)</label><input type="number" id="cfg-clip-duration" value="60" min="10" onchange="saveSettings()"></div>
-        <div class="form-group"><label>Max Video Length (s)</label><input type="number" id="cfg-max-video" value="1200" min="60" onchange="saveSettings()"></div>
-      </div>
-      <div class="form-group">
-        <label>Edit Intensity: <span id="intensity-label">Medium</span></label>
-        <input type="range" id="cfg-intensity" min="0" max="2" value="1" oninput="document.getElementById('intensity-label').textContent=['Light','Medium','Heavy'][this.value]" onchange="saveSettings()">
-      </div>
-      <div class="form-row" style="gap:24px">
-        <div class="toggle-wrap"><div class="toggle on" id="cfg-auto-ytdlp" onclick="toggleEl(this);saveSettings()"></div><span style="font-size:13px">Auto-update yt-dlp</span></div>
-        <div class="toggle-wrap"><div class="toggle on" id="cfg-auto-cleanup" onclick="toggleEl(this);saveSettings()"></div><span style="font-size:13px">Auto-cleanup files</span></div>
-      </div>
+// --- PIPELINE ---
+function renderPipeline(){
+  return `<div class="section-header"><h3>Pipeline</h3></div>
+    <div class="form-card">
+      <h3>Trigger Run</h3>
+      <div class="form-row"><div><label>Channel</label><select id="pipe-chan"></select></div><div><label>Influencer</label><select id="pipe-inf"></select></div></div>
+      <button class="btn-purple" onclick="triggerTargetedRun()">Run Now</button>
     </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="section-header">Schedule</div>
-      <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">Timezone: America/Edmonton (MDT)</div>
-      <div class="schedule-row"><span>Run 1</span><input type="time" id="sched-1" value="08:00" onchange="saveSettings()"></div>
-      <div class="schedule-row"><span>Run 2</span><input type="time" id="sched-2" value="14:00" onchange="saveSettings()"></div>
-      <div class="schedule-row"><span>Run 3</span><input type="time" id="sched-3" value="20:00" onchange="saveSettings()"></div>
-    </div>
+    <div class="section" style="margin-top:24px">
+      <div class="section-header"><h3>Run History</h3></div>
+      <div class="table-wrap"><table><thead><tr><th>Started</th><th>Finished</th><th>Channel</th><th>Influencer</th><th>Status</th><th>Uploaded</th><th>Failed</th><th>Duration</th><th></th></tr></thead>
+      <tbody id="pipe-body"><tr><td colspan="9" class="loading">Loading...</td></tr></tbody></table></div>
+    </div>`;
+}
+async function loadPipeline(){
+  try{
+    const[chans,infs,runs]=await Promise.all([
+      sbQuery('cf_channels','GET',null,'?select=name'),
+      sbQuery('cf_influencers','GET',null,"?select=name&status=eq.active"),
+      sbQuery('cf_pipeline_runs','GET',null,'?order=started_at.desc&limit=50')
+    ]);
+    const cs=document.getElementById('pipe-chan');
+    const is=document.getElementById('pipe-inf');
+    cs.innerHTML='<option value="">Select channel</option>'+chans.map(c=>`<option>${esc(c.name)}</option>`).join('');
+    is.innerHTML='<option value="">Select influencer</option>'+infs.map(i=>`<option>${esc(i.name)}</option>`).join('');
+    
+    document.getElementById('pipe-body').innerHTML=runs.length?runs.map(r=>`<tr>
+      <td>${fmtTime(r.started_at)}</td><td>${r.finished_at?fmtTime(r.finished_at):'--'}</td>
+      <td>${esc(r.channel||'')}</td><td>${esc(r.influencer||'')}</td>
+      <td><span class="badge badge-${r.status}">${r.status}</span></td>
+      <td>${r.clips_uploaded||0}</td><td>${r.clips_failed||0}</td><td>${r.duration_seconds?r.duration_seconds+'s':'--'}</td>
+      <td>${r.error_log?`<button class="btn-ghost btn-sm" onclick="this.nextElementSibling.classList.toggle('show')">Errors</button><div class="error-log">${esc(r.error_log)}</div>`:''}</td>
+    </tr>`).join(''):'<tr><td colspan="9" class="empty">No pipeline runs yet</td></tr>';
+  }catch(e){console.error(e)}
+}
+async function triggerTargetedRun(){
+  const ch=document.getElementById('pipe-chan').value;
+  const inf=document.getElementById('pipe-inf').value;
+  try{await sbQuery('cf_pipeline_runs','POST',{status:'queued',started_at:new Date().toISOString(),channel:ch||null,influencer:inf||null});loadPipeline()}catch(e){alert(e.message)}
+}
+
+// --- SETTINGS ---
+const settingDefs=[
+  {key:'clips_per_run',label:'Clips Per Run',type:'number',default:5},
+  {key:'runs_per_day',label:'Runs Per Day',type:'number',default:3},
+  {key:'clip_duration',label:'Clip Duration (seconds)',type:'number',default:60},
+  {key:'max_video_length',label:'Max Video Length (seconds)',type:'number',default:600},
+  {key:'edit_intensity',label:'Edit Intensity',type:'select',options:['light','medium','heavy'],default:'medium'},
+  {key:'auto_update_ytdlp',label:'Auto Update YT-DLP',type:'toggle',default:true},
+  {key:'auto_cleanup',label:'Auto Cleanup',type:'toggle',default:false},
+  {key:'schedule_times',label:'Schedule Times (comma separated)',type:'text',default:'08:00,14:00,20:00'}
+];
+function renderSettings(){
+  return `<div class="section-header"><h3>Settings</h3></div>
+    <div class="form-card" id="settings-form"><div class="loading">Loading...</div></div>
     <div class="danger-zone">
       <h3>Danger Zone</h3>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-red" onclick="confirmAction('Reset dedup database?')">Reset Dedup Database</button>
-        <button class="btn btn-red" onclick="confirmAction('Stop all pipelines?')">Stop All Pipelines</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// -- Data --
-const INFLUENCER_SEED = [
-  {name:"MrBeast",terms:["mrbeast","mr beast challenge"]},
-  {name:"PewDiePie",terms:["pewdiepie","pewds"]},
-  {name:"Markiplier",terms:["markiplier","mark horror"]},
-  {name:"Jacksepticeye",terms:["jacksepticeye","jack funny"]},
-  {name:"Pokimane",terms:["pokimane","poki stream"]},
-  {name:"xQc",terms:["xqc","xqc react","xqc funny"]},
-  {name:"Ludwig",terms:["ludwig","ludwig stream"]},
-  {name:"HasanAbi",terms:["hasanabi","hasan react"]},
-  {name:"Kai Cenat",terms:["kai cenat","kai stream"]},
-  {name:"IShowSpeed",terms:["ishowspeed","speed funny"]},
-  {name:"Jidion",terms:["jidion","jidion prank"]},
-  {name:"BruceDropEmOff",terms:["bruce dropemoff","bruce stream"]},
-  {name:"YourRAGE",terms:["yourrage","rage gaming"]},
-  {name:"Tariq",terms:["tariq","tariq clips"]},
-  {name:"Agent 00",terms:["agent 00","agent00 gaming"]},
-  {name:"CoryxKenshin",terms:["coryxkenshin","cory horror"]},
-  {name:"DashieXP",terms:["dashie xp","dashie funny"]},
-  {name:"Berleezy",terms:["berleezy","berleezy funny"]},
-  {name:"Moralvox",terms:["moralvox","moralvox clips"]},
-  {name:"TheDooo",terms:["thedooo","thedooo guitar"]},
-  {name:"Ameer",terms:["ameer","ameer react"]},
-  {name:"Tyrone",terms:["tyrone","tyrone gaming"]},
-  {name:"Zias",terms:["zias","zias react"]},
-  {name:"FlightReacts",terms:["flightreacts","flight react"]},
-  {name:"BDR",terms:["bdr","bdr gaming"]}
-];
-
-const CLIP_TITLES = [
-  "This went too far","POV: You weren't ready for this","Wait for the ending","Bro really just did that",
-  "No way that just happened","He can't be serious","This changed everything","The moment he realized",
-  "I'm done watching this","You have to see this","He really said that","Unexpected ending",
-  "This is why I watch","How is this possible","The craziest thing I've seen","Absolute madness",
-  "Nobody expected this","This took a turn","Plot twist nobody saw coming","I can't believe this",
-  "The reaction says it all","This needs to go viral","Watch until the end","Shorts gold right here",
-  "He had us in the first half"
-];
-
-const CHANNELS = [
-  {name:"llovecontentclips",subs:0,clips:137,views:"245",status:"Active",lastUpload:"2 hours ago",token:"Valid"},
-  {name:"ClipForge Gaming",subs:45,clips:89,views:"12.3K",status:"Active",lastUpload:"5 hours ago",token:"Valid"},
-  {name:"ClipForge Highlights",subs:12,clips:34,views:"890",status:"Active",lastUpload:"1 day ago",token:"Valid"}
-];
-
-// -- Init --
-function initData(){
-  if(localStorage.getItem('cf_init')) return;
-  const influencers = INFLUENCER_SEED.map((inf,i)=>({...inf,id:i,clips:Math.floor(Math.random()*20),lastClipped:randomDate(30),status:i>=20?'paused':'active'}));
-  localStorage.setItem('cf_influencers',JSON.stringify(influencers));
-
-  const statuses = ['uploaded','uploaded','uploaded','uploaded','uploaded','uploaded','uploaded','failed','uploaded','processing'];
-  const clips = [];
-  for(let i=0;i<25;i++){
-    const inf = influencers[Math.floor(Math.random()*influencers.length)];
-    const ch = CHANNELS[Math.floor(Math.random()*CHANNELS.length)];
-    clips.push({id:i+1,title:CLIP_TITLES[i%CLIP_TITLES.length],influencer:inf.name,channel:ch.name,views:Math.floor(Math.random()*5000),duration:Math.floor(Math.random()*16)+45,date:randomDate(30),status:statuses[Math.floor(Math.random()*statuses.length)]});
+      <button class="btn-red" onclick="resetClips()">Reset All Clips</button>
+      <button class="btn-red" onclick="resetPipeline()">Reset Pipeline History</button>
+    </div>`;
+}
+async function loadSettings(){
+  try{
+    const rows=await sbQuery('cf_settings','GET',null,'?select=key,value');
+    const map={};rows.forEach(r=>map[r.key]=r.value);
+    
+    document.getElementById('settings-form').innerHTML=`<h3>Pipeline Configuration</h3>`+
+      settingDefs.map(s=>{
+        const val=map[s.key]!==undefined?map[s.key]:s.default;
+        if(s.type==='number')return `<div class="form-row single"><label>${s.label}</label><input type="number" id="set-${s.key}" value="${val}"></div>`;
+        if(s.type==='select')return `<div class="form-row single"><label>${s.label}</label><select id="set-${s.key}">${s.options.map(o=>`<option${o===val?' selected':''}>${o}</option>`).join('')}</select></div>`;
+        if(s.type==='toggle')return `<div class="form-row single"><label>${s.label}</label><div class="toggle${val?' on':''}" id="set-${s.key}" onclick="this.classList.toggle('on')"></div></div>`;
+        return `<div class="form-row single"><label>${s.label}</label><input id="set-${s.key}" value="${val}"></div>`;
+      }).join('')+`<button class="btn-purple" onclick="saveSettings()" style="margin-top:16px">Save Settings</button>`;
+  }catch(e){console.error(e)}
+}
+async function saveSettings(){
+  try{
+    for(const s of settingDefs){
+      let val;
+      if(s.type==='toggle')val=document.getElementById(`set-${s.key}`).classList.contains('on');
+      else if(s.type==='number')val=Number(document.getElementById(`set-${s.key}`).value);
+      else val=document.getElementById(`set-${s.key}`).value;
+      
+      await sbQuery('cf_settings','POST',{key:s.key,value:val},'');
+    }
+    alert('Settings saved');
+  }catch(e){
+    // Try upsert via DELETE + POST
+    try{
+      for(const s of settingDefs){
+        let val;
+        if(s.type==='toggle')val=document.getElementById(`set-${s.key}`).classList.contains('on');
+        else if(s.type==='number')val=Number(document.getElementById(`set-${s.key}`).value);
+        else val=document.getElementById(`set-${s.key}`).value;
+        await sbQuery('cf_settings','DELETE',null,`?key=eq.${s.key}`);
+        await sbQuery('cf_settings','POST',{key:s.key,value:val});
+      }
+      alert('Settings saved');
+    }catch(e2){alert('Error: '+e2.message)}
   }
-  clips.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  localStorage.setItem('cf_clips',JSON.stringify(clips));
-
-  localStorage.setItem('cf_pipeline',JSON.stringify({lastRun:randomDate(1),nextRun:"2026-05-22T08:00:00",status:"Idle"}));
-
-  localStorage.setItem('cf_settings',JSON.stringify({clipsPerRun:1,runsPerDay:3,clipDuration:60,maxVideo:1200,intensity:1,autoYtdlp:true,autoCleanup:true,sched1:"08:00",sched2:"14:00",sched3:"20:00"}));
-  localStorage.setItem('cf_init','1');
 }
+async function resetClips(){if(confirm('Delete ALL clips? This cannot be undone.')){try{await sbQuery('cf_clips','DELETE');alert('Done');render()}catch(e){alert(e.message)}}}
+async function resetPipeline(){if(confirm('Delete ALL pipeline history? This cannot be undone.')){try{await sbQuery('cf_pipeline_runs','DELETE');alert('Done');render()}catch(e){alert(e.message)}}}
 
-function randomDate(daysAgo){
-  const d=new Date();d.setHours(d.getHours()-Math.floor(Math.random()*daysAgo*24));
-  return d.toISOString();
-}
+// Utils
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtTime(t){if(!t)return '--';const d=new Date(t);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}
 
-function getClips(){return JSON.parse(localStorage.getItem('cf_clips')||'[]')}
-function getInfluencers(){return JSON.parse(localStorage.getItem('cf_influencers')||'[]')}
-function getPipeline(){return JSON.parse(localStorage.getItem('cf_pipeline')||'{}')}
-function getSettings(){return JSON.parse(localStorage.getItem('cf_settings')||'{}')}
-
-// -- Routing --
-function navigate(page){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
-  window.location.hash=page;
-  if(window.innerWidth<=768){toggleSidebar(false)}
-  if(page==='clips')renderClips();
-  if(page==='influencers')renderInfluencers();
-  if(page==='channels')renderChannels();
-  if(page==='settings')loadSettings();
-}
-
-function toggleSidebar(state){
-  const sb=document.getElementById('sidebar'),ov=document.getElementById('overlay');
-  const open=state!==undefined?state:!sb.classList.contains('open');
-  sb.classList.toggle('open',open);ov.classList.toggle('show',open);
-}
-
-// -- Dashboard --
-function renderDashboard(){
-  const clips=getClips();
-  const totalViews=clips.reduce((s,c)=>s+c.views,0);
-  const today=new Date().toISOString().slice(0,10);
-  const clipsToday=clips.filter(c=>c.date.slice(0,10)===today).length;
-  const html=[
-    statCard('Total Clips Uploaded',clips.length,'--purple'),
-    statCard('Clips Today',clipsToday,'--cyan'),
-    statCard('Active Channels',CHANNELS.length,'--green'),
-    statCard('Total Views',totalViews.toLocaleString(),'--amber')
-  ].join('');
-  document.getElementById('stats-
+// Init
+window.addEventListener('hashchange',render);
+render();
+</script>
+</body>
+</html>

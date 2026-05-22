@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClipForge Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--card:#141414;--card-border:#1e1e1e;--purple:#8b5cf6;--purple-dim:#8b5cf633;--cyan:#06b6d4;--cyan-dim:#06b6d433;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--text:#e5e5e5;--text-dim:#888;--sidebar-w:220px;--transition:.2s ease}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+a{color:var(--cyan);text-decoration:none}
+
+/* Sidebar */
+.sidebar{width:var(--sidebar-w);background:var(--card);border-right:1px solid var(--card-border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform var(--transition)}
+.sidebar-logo{padding:20px;font-size:18px;font-weight:700;color:var(--purple);border-bottom:1px solid var(--card-border);letter-spacing:-.5px}
+.sidebar-nav{flex:1;padding:8px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--text-dim);cursor:pointer;transition:all var(--transition);font-size:14px;font-weight:500;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:#ffffff08}
+.nav-item.active{color:var(--purple);background:var(--purple-dim);border-left-color:var(--purple)}
+.nav-icon{width:18px;height:18px;opacity:.7}
+
+/* Mobile toggle */
+.sidebar-toggle{display:none;position:fixed;top:12px;left:12px;z-index:150;background:var(--card);border:1px solid var(--card-border);color:var(--text);width:40px;height:40px;border-radius:8px;cursor:pointer;font-size:18px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
+
+/* Main */
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;padding:24px;transition:margin var(--transition)}
+.page{display:none;animation:fadeIn .2s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:20px;transition:box-shadow var(--transition)}
+.card:hover{box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.card-title{font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.card-value{font-size:28px;font-weight:700}
+
+/* Grid */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;color:var(--text-dim);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.5px;border-bottom:1px solid var(--card-border)}
+td{padding:10px 12px;border-bottom:1px solid var(--card-border)}
+tr:hover td{background:#ffffff05}
+.thumb{width:48px;height:48px;background:#1e1e1e;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:10px}
+
+/* Badges */
+.badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-green{background:#10b98122;color:var(--green)}
+.badge-red{background:#ef444422;color:var(--red)}
+.badge-amber{background:#f59e0b22;color:var(--amber)}
+.badge-purple{background:var(--purple-dim);color:var(--purple)}
+.badge-cyan{background:var(--cyan-dim);color:var(--cyan)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all var(--transition);font-family:inherit}
+.btn-purple{background:var(--purple);color:#fff}.btn-purple:hover{background:#7c4fe0}
+.btn-cyan{background:var(--cyan);color:#fff}.btn-cyan:hover{background:#059bb8}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#dc3535}
+.btn-ghost{background:transparent;border:1px solid var(--card-border);color:var(--text)}.btn-ghost:hover{background:#ffffff08}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* Forms */
+input,select{background:var(--bg);border:1px solid var(--card-border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border var(--transition)}
+input:focus,select:focus{border-color:var(--purple)}
+input[type="number"]{width:100px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;color:var(--text-dim);margin-bottom:6px;font-weight:500}
+.form-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.toggle-wrap{display:flex;align-items:center;gap:8px}
+.toggle{width:40px;height:22px;background:#333;border-radius:11px;cursor:pointer;position:relative;transition:background var(--transition)}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform var(--transition)}
+.toggle.on::after{transform:translateX(18px)}
+
+/* Search/filters */
+.filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filters input[type="text"]{min-width:240px}
+
+/* Pagination */
+.pagination{display:flex;gap:4px;justify-content:center;margin-top:16px}
+.pagination .btn-sm{min-width:32px;justify-content:center}
+.pagination .btn-sm.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--purple);color:var(--text);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;transform:translateY(80px);opacity:0;transition:all .3s ease;z-index:200}
+.toast.show{transform:none;opacity:1}
+
+/* Section headers */
+.section-header{font-size:16px;font-weight:600;margin-bottom:16px}
+
+/* Influencer chips */
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{padding:2px 8px;background:var(--cyan-dim);color:var(--cyan);border-radius:4px;font-size:11px}
+
+/* Channel cards */
+.channel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.channel-stat{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid var(--card-border)}
+.channel-stat:last-child{border:none}
+.channel-stat span:first-child{color:var(--text-dim)}
+
+/* Slider */
+input[type="range"]{-webkit-appearance:none;width:100%;height:6px;background:#333;border-radius:3px;outline:none;border:none;padding:0}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--purple);border-radius:50%;cursor:pointer}
+
+/* Danger zone */
+.danger-zone{border:1px solid var(--red);border-radius:10px;padding:20px;margin-top:24px}
+.danger-zone h3{color:var(--red);margin-bottom:12px;font-size:15px}
+
+/* Schedule inputs */
+.schedule-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.schedule-row span{min-width:100px;color:var(--text-dim);font-size:13px}
+
+/* Influencer list */
+.influencer-row{display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--card-border);flex-wrap:wrap}
+.influencer-row:last-child{border:none}
+.influencer-name{min-width:150px;font-weight:500}
+.influencer-meta{font-size:12px;color:var(--text-dim)}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .sidebar-toggle{display:flex;align-items:center;justify-content:center}
+  .overlay.show{display:block}
+  .main{margin-left:0;padding:16px;padding-top:60px}
+  .two-col{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .filters input[type="text"]{min-width:160px}
+  .channel-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<button class="sidebar-toggle" onclick="toggleSidebar()">&#9776;</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">ClipForge</div>
+  <div class="sidebar-nav">
+    <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-page="clips" onclick="navigate('clips')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Clips
+    </div>
+    <div class="nav-item" data-page="influencers" onclick="navigate('influencers')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Influencers
+    </div>
+    <div class="nav-item" data-page="channels" onclick="navigate('channels')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+      Channels
+    </div>
+    <div class="nav-item" data-page="settings" onclick="navigate('settings')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <!-- Dashboard -->
+  <div class="page active" id="page-dashboard">
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="two-col">
+      <div class="card">
+        <div class="section-header">Recent Clips</div>
+        <div class="table-wrap"><table id="recent-clips-table"><thead><tr><th></th><th>Title</th><th>Channel</th><th>Views</th><th>Date</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="section-header">Pipeline Status</div>
+          <div id="pipeline-status"></div>
+          <div style="margin-top:12px"><button class="btn btn-purple btn-sm" onclick="toast('Pipeline triggered')">Run Now</button></div>
+        </div>
+        <div class="card">
+          <div class="section-header">Quick Actions</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-purple" onclick="toast('Pipeline triggered')">Run Pipeline Now</button>
+            <button class="btn btn-cyan" onclick="navigate('influencers')">Add Influencer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clips -->
+  <div class="page" id="page-clips">
+    <div class="section-header">All Clips</div>
+    <div class="filters">
+      <input type="text" id="clip-search" placeholder="Search clips..." oninput="renderClips()">
+      <select id="clip-channel-filter" onchange="renderClips()"><option value="">All Channels</option></select>
+      <select id="clip-status-filter" onchange="renderClips()"><option value="">All Status</option><option value="uploaded">Uploaded</option><option value="failed">Failed</option><option value="processing">Processing</option></select>
+    </div>
+    <div class="card"><div class="table-wrap"><table id="clips-table"><thead><tr><th>#</th><th></th><th>Title</th><th>Influencer</th><th>Channel</th><th>Views</th><th>Duration</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div></div>
+    <div class="pagination" id="clips-pagination"></div>
+  </div>
+
+  <!-- Influencers -->
+  <div class="page" id="page-influencers">
+    <div class="section-header">Influencers</div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="form-row">
+        <div class="form-group" style="flex:1;min-width:160px"><label>Name</label><input type="text" id="inf-name" placeholder="Influencer name"></div>
+        <div class="form-group" style="flex:2;min-width:200px"><label>Search Terms (comma separated)</label><input type="text" id="inf-terms" placeholder="term1, term2, term3"></div>
+        <button class="btn btn-cyan" onclick="addInfluencer()">Add</button>
+      </div>
+    </div>
+    <div class="card"><div id="influencer-list"></div></div>
+  </div>
+
+  <!-- Channels -->
+  <div class="page" id="page-channels">
+    <div class="section-header">Channels</div>
+    <div class="channel-grid" id="channel-grid"></div>
+  </div>
+
+  <!-- Settings -->
+  <div class="page" id="page-settings">
+    <div class="section-header">Configuration</div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="form-row">
+        <div class="form-group"><label>Clips per Run</label><input type="number" id="cfg-clips-per-run" value="1" min="1" onchange="saveSettings()"></div>
+        <div class="form-group"><label>Runs per Day</label><input type="number" id="cfg-runs-per-day" value="3" min="1" onchange="saveSettings()"></div>
+        <div class="form-group"><label>Clip Duration (s)</label><input type="number" id="cfg-clip-duration" value="60" min="10" onchange="saveSettings()"></div>
+        <div class="form-group"><label>Max Video Length (s)</label><input type="number" id="cfg-max-video" value="1200" min="60" onchange="saveSettings()"></div>
+      </div>
+      <div class="form-group">
+        <label>Edit Intensity: <span id="intensity-label">Medium</span></label>
+        <input type="range" id="cfg-intensity" min="0" max="2" value="1" oninput="document.getElementById('intensity-label').textContent=['Light','Medium','Heavy'][this.value]" onchange="saveSettings()">
+      </div>
+      <div class="form-row" style="gap:24px">
+        <div class="toggle-wrap"><div class="toggle on" id="cfg-auto-ytdlp" onclick="toggleEl(this);saveSettings()"></div><span style="font-size:13px">Auto-update yt-dlp</span></div>
+        <div class="toggle-wrap"><div class="toggle on" id="cfg-auto-cleanup" onclick="toggleEl(this);saveSettings()"></div><span style="font-size:13px">Auto-cleanup files</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-header">Schedule</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">Timezone: America/Edmonton (MDT)</div>
+      <div class="schedule-row"><span>Run 1</span><input type="time" id="sched-1" value="08:00" onchange="saveSettings()"></div>
+      <div class="schedule-row"><span>Run 2</span><input type="time" id="sched-2" value="14:00" onchange="saveSettings()"></div>
+      <div class="schedule-row"><span>Run 3</span><input type="time" id="sched-3" value="20:00" onchange="saveSettings()"></div>
+    </div>
+    <div class="danger-zone">
+      <h3>Danger Zone</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-red" onclick="confirmAction('Reset dedup database?')">Reset Dedup Database</button>
+        <button class="btn btn-red" onclick="confirmAction('Stop all pipelines?')">Stop All Pipelines</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// -- Data --
+const INFLUENCER_SEED = [
+  {name:"MrBeast",terms:["mrbeast","mr beast challenge"]},
+  {name:"PewDiePie",terms:["pewdiepie","pewds"]},
+  {name:"Markiplier",terms:["markiplier","mark horror"]},
+  {name:"Jacksepticeye",terms:["jacksepticeye","jack funny"]},
+  {name:"Pokimane",terms:["pokimane","poki stream"]},
+  {name:"xQc",terms:["xqc","xqc react","xqc funny"]},
+  {name:"Ludwig",terms:["ludwig","ludwig stream"]},
+  {name:"HasanAbi",terms:["hasanabi","hasan react"]},
+  {name:"Kai Cenat",terms:["kai cenat","kai stream"]},
+  {name:"IShowSpeed",terms:["ishowspeed","speed funny"]},
+  {name:"Jidion",terms:["jidion","jidion prank"]},
+  {name:"BruceDropEmOff",terms:["bruce dropemoff","bruce stream"]},
+  {name:"YourRAGE",terms:["yourrage","rage gaming"]},
+  {name:"Tariq",terms:["tariq","tariq clips"]},
+  {name:"Agent 00",terms:["agent 00","agent00 gaming"]},
+  {name:"CoryxKenshin",terms:["coryxkenshin","cory horror"]},
+  {name:"DashieXP",terms:["dashie xp","dashie funny"]},
+  {name:"Berleezy",terms:["berleezy","berleezy funny"]},
+  {name:"Moralvox",terms:["moralvox","moralvox clips"]},
+  {name:"TheDooo",terms:["thedooo","thedooo guitar"]},
+  {name:"Ameer",terms:["ameer","ameer react"]},
+  {name:"Tyrone",terms:["tyrone","tyrone gaming"]},
+  {name:"Zias",terms:["zias","zias react"]},
+  {name:"FlightReacts",terms:["flightreacts","flight react"]},
+  {name:"BDR",terms:["bdr","bdr gaming"]}
+];
+
+const CLIP_TITLES = [
+  "This went too far","POV: You weren't ready for this","Wait for the ending","Bro really just did that",
+  "No way that just happened","He can't be serious","This changed everything","The moment he realized",
+  "I'm done watching this","You have to see this","He really said that","Unexpected ending",
+  "This is why I watch","How is this possible","The craziest thing I've seen","Absolute madness",
+  "Nobody expected this","This took a turn","Plot twist nobody saw coming","I can't believe this",
+  "The reaction says it all","This needs to go viral","Watch until the end","Shorts gold right here",
+  "He had us in the first half"
+];
+
+const CHANNELS = [
+  {name:"llovecontentclips",subs:0,clips:137,views:"245",status:"Active",lastUpload:"2 hours ago",token:"Valid"},
+  {name:"ClipForge Gaming",subs:45,clips:89,views:"12.3K",status:"Active",lastUpload:"5 hours ago",token:"Valid"},
+  {name:"ClipForge Highlights",subs:12,clips:34,views:"890",status:"Active",lastUpload:"1 day ago",token:"Valid"}
+];
+
+// -- Init --
+function initData(){
+  if(localStorage.getItem('cf_init')) return;
+  const influencers = INFLUENCER_SEED.map((inf,i)=>({...inf,id:i,clips:Math.floor(Math.random()*20),lastClipped:randomDate(30),status:i>=20?'paused':'active'}));
+  localStorage.setItem('cf_influencers',JSON.stringify(influencers));
+
+  const statuses = ['uploaded','uploaded','uploaded','uploaded','uploaded','uploaded','uploaded','failed','uploaded','processing'];
+  const clips = [];
+  for(let i=0;i<25;i++){
+    const inf = influencers[Math.floor(Math.random()*influencers.length)];
+    const ch = CHANNELS[Math.floor(Math.random()*CHANNELS.length)];
+    clips.push({id:i+1,title:CLIP_TITLES[i%CLIP_TITLES.length],influencer:inf.name,channel:ch.name,views:Math.floor(Math.random()*5000),duration:Math.floor(Math.random()*16)+45,date:randomDate(30),status:statuses[Math.floor(Math.random()*statuses.length)]});
+  }
+  clips.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  localStorage.setItem('cf_clips',JSON.stringify(clips));
+
+  localStorage.setItem('cf_pipeline',JSON.stringify({lastRun:randomDate(1),nextRun:"2026-05-22T08:00:00",status:"Idle"}));
+
+  localStorage.setItem('cf_settings',JSON.stringify({clipsPerRun:1,runsPerDay:3,clipDuration:60,maxVideo:1200,intensity:1,autoYtdlp:true,autoCleanup:true,sched1:"08:00",sched2:"14:00",sched3:"20:00"}));
+  localStorage.setItem('cf_init','1');
+}
+
+function randomDate(daysAgo){
+  const d=new Date();d.setHours(d.getHours()-Math.floor(Math.random()*daysAgo*24));
+  return d.toISOString();
+}
+
+function getClips(){return JSON.parse(localStorage.getItem('cf_clips')||'[]')}
+function getInfluencers(){return JSON.parse(localStorage.getItem('cf_influencers')||'[]')}
+function getPipeline(){return JSON.parse(localStorage.getItem('cf_pipeline')||'{}')}
+function getSettings(){return JSON.parse(localStorage.getItem('cf_settings')||'{}')}
+
+// -- Routing --
+function navigate(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
+  window.location.hash=page;
+  if(window.innerWidth<=768){toggleSidebar(false)}
+  if(page==='clips')renderClips();
+  if(page==='influencers')renderInfluencers();
+  if(page==='channels')renderChannels();
+  if(page==='settings')loadSettings();
+}
+
+function toggleSidebar(state){
+  const sb=document.getElementById('sidebar'),ov=document.getElementById('overlay');
+  const open=state!==undefined?state:!sb.classList.contains('open');
+  sb.classList.toggle('open',open);ov.classList.toggle('show',open);
+}
+
+// -- Dashboard --
+function renderDashboard(){
+  const clips=getClips();
+  const totalViews=clips.reduce((s,c)=>s+c.views,0);
+  const today=new Date().toISOString().slice(0,10);
+  const clipsToday=clips.filter(c=>c.date.slice(0,10)===today).length;
+  const html=[
+    statCard('Total Clips Uploaded',clips.length,'--purple'),
+    statCard('Clips Today',clipsToday,'--cyan'),
+    statCard('Active Channels',CHANNELS.length,'--green'),
+    statCard('Total Views',totalViews.toLocaleString(),'--amber')
+  ].join('');
+  document.getElementById('stats-
